@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: final04ka-prod
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: final04ka-prod
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: db
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: postgres-secret
+          volumeMounts:
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+  volumeClaimTemplates:
+    - metadata:
+        name: pgdata
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi
