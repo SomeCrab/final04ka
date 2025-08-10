@@ -29,18 +29,26 @@ spec:
         - name: ghcr-cred
       containers:
         - name: app
-          image: ghcr.io/somecrab/final04ka:0.2.0
+          image: ghcr.io/somecrab/final04ka:0.2.1
           ports:
             - containerPort: 8000
           envFrom:
             - secretRef:
                 name: backend-env
+          env:
+            - name: GUNICORN_CMD_ARGS
+              value: "--worker-tmp-dir /tmp"
+            - name: TMPDIR
+              value: /tmp
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           readinessProbe:
-            httpGet: { path: /health, port: 8000 }
+            httpGet: { path: /health, port: 8000, httpHeaders: [ { name: Host, value: api.wiru.site } ] }
             initialDelaySeconds: 5
             periodSeconds: 5
           livenessProbe:
-            httpGet: { path: /health, port: 8000 }
+            httpGet: { path: /health, port: 8000, httpHeaders: [ { name: Host, value: api.wiru.site } ] }
             initialDelaySeconds: 15
             periodSeconds: 10
           resources:
@@ -52,3 +60,6 @@ spec:
               memory: "512Mi"
           securityContext:
             readOnlyRootFilesystem: true
+      volumes:
+        - name: tmp
+          emptyDir: {}
