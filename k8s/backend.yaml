@@ -27,9 +27,18 @@ spec:
     spec:
       imagePullSecrets:
         - name: ghcr-cred
+      initContainers:
+        - name: collectstatic
+          image: ghcr.io/somecrab/final04ka:0.2.2
+          command: ["bash","-lc"]
+          args: ["python manage.py collectstatic --noinput"]
+          envFrom: [{ secretRef: { name: backend-env } }]
+          volumeMounts:
+            - name: static
+              mountPath: /app/staticfiles
       containers:
         - name: app
-          image: ghcr.io/somecrab/final04ka:0.2.1
+          image: ghcr.io/somecrab/final04ka:0.2.2
           ports:
             - containerPort: 8000
           envFrom:
@@ -43,6 +52,8 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+            - name: static
+              mountPath: /app/staticfiles
           readinessProbe:
             httpGet: { path: /health, port: 8000, httpHeaders: [ { name: Host, value: api.wiru.site } ] }
             initialDelaySeconds: 5
@@ -62,4 +73,6 @@ spec:
             readOnlyRootFilesystem: true
       volumes:
         - name: tmp
+          emptyDir: {}
+        - name: static
           emptyDir: {}
