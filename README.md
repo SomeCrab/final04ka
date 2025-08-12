@@ -1,4 +1,4 @@
-# API for booking site. Final project made for cource.
+# API for booking site. Final project made for course.
 
 ## stack
 - <details>
@@ -14,6 +14,6 @@
     Serves as project DB.
   </details>
 - <details>
-    <summary>Postfix (WIP)</summary>
-    smtp server for mailing system... Cominc soon.
+    <summary>Postfix</summary>
+    SMTP server for mailing system.
   </details>
