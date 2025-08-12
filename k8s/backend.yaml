@@ -29,7 +29,7 @@ spec:
         - name: ghcr-cred
       initContainers:
         - name: collectstatic
-          image: ghcr.io/somecrab/final04ka:0.2.2
+          image: ghcr.io/somecrab/final04ka:0.2.3
           command: ["bash","-lc"]
           args: ["python manage.py collectstatic --noinput"]
           envFrom: [{ secretRef: { name: backend-env } }]
@@ -38,7 +38,7 @@ spec:
               mountPath: /app/staticfiles
       containers:
         - name: app
-          image: ghcr.io/somecrab/final04ka:0.2.2
+          image: ghcr.io/somecrab/final04ka:0.2.3
           ports:
             - containerPort: 8000
           envFrom:
@@ -49,6 +49,16 @@ spec:
               value: "--worker-tmp-dir /tmp"
             - name: TMPDIR
               value: /tmp
+            - name: EMAIL_HOST
+              value: postfix
+            - name: EMAIL_PORT
+              value: "25"
+            - name: EMAIL_USE_TLS
+              value: "false"
+            - name: DEFAULT_FROM_EMAIL
+              value: "noreply@wiru.site"
+            - name: SERVER_EMAIL
+              value: "server@wiru.site"
           volumeMounts:
             - name: tmp
               mountPath: /tmp

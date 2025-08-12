@@ -27,8 +27,10 @@ LOG_DIR = BASE_DIR / 'logs'
 os.makedirs(LOG_DIR, exist_ok=True)
 ENV_FILE = str(BASE_DIR / ".env")
 
+RUNNING_DEVELOPMENT = not RUNNING_IN_K8S and os.path.exists(ENV_FILE)
+
 # setting environment from .env file if dev
-if not RUNNING_IN_K8S and os.path.exists(ENV_FILE):
+if RUNNING_DEVELOPMENT:
     environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 SECRET_KEY = env('SECRET_KEY')
@@ -162,6 +164,19 @@ LOGGING = {
         "level": env("DJANGO_LOG_LEVEL", default="INFO"),
     },
 }
+
+# Email system
+if RUNNING_DEVELOPMENT:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = env("EMAIL_HOST", default="postfix")
+    EMAIL_PORT = env.int("EMAIL_PORT", default=587)
+    EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+    EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+    EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+    DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@wiru.site")
+    SERVER_EMAIL = env("SERVER_EMAIL", default="server@wiru.site")
 
 
 # Core settings
