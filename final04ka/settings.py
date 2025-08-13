@@ -35,6 +35,8 @@ if RUNNING_DEVELOPMENT:
 
 SECRET_KEY = env('SECRET_KEY')
 
+LANDLORD_INVITE_CODE = env("LANDLORD_INVITE_CODE", default="")
+
 DEBUG = env.bool('DEBUG')
 
 
@@ -60,6 +62,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'django_filters',
+    'crabooking.apps.CrabookingConfig',
 ]
 
 MIDDLEWARE = [
@@ -71,6 +75,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'crabooking.middleware.JWTAuthenticationMiddleware',
 ]
 
 ROOT_URLCONF = "final04ka.urls"
@@ -177,6 +182,49 @@ else:
     EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
     DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@wiru.site")
     SERVER_EMAIL = env("SERVER_EMAIL", default="server@wiru.site")
+
+
+# DRF settings
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'final04ka.paginations.CustomCursorPagination',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.DjangoModelPermissions',
+    ],
+}
+
+
+# cookies settings
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+#CSRF_TOKEN_ALGORITHM = 'RS256'
+CSRF_TOKEN_ALGORITHM = 'HS256'
+ACCES_TOKEN_THRESHOLD = 60
+REFRESH_TOKEN_THRESHOLD = 86400
+if DEBUG:
+    CSRF_TOKEN_ALGORITHM = 'HS256'
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+    
+    'ALGORITHM': CSRF_TOKEN_ALGORITHM,
+    'SIGNING_KEY': SECRET_KEY,
+    
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+}
 
 
 # Core settings
